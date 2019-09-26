@@ -270,8 +270,8 @@ static void generate_ecdsa(u8 *outR, u8 *outS, u8 *k, u8 *hash)
 
 	bn_from_mon(R, ec_N, 21);
 	bn_from_mon(S, ec_N, 21);
-	memcpy(outR,R+1,0x20);
-	memcpy(outS,S+1,0x20);
+	memcpy(outR,R+1,20);
+	memcpy(outS,S+1,20);
 }
 
 static int check_ecdsa(struct point *Q, u8 *inR, u8 *inS, u8 *hash)
