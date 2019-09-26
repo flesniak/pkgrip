@@ -726,10 +726,15 @@ int sceNpDrmGetFixedKey(u8 *key, char *npstr, int type)
 int decrypt_pgd(u8* pgd_data, int pgd_size, int flag, u8* key __attribute__((unused)))
 {
 	int result;
-	PGD_HEADER PGD[sizeof(PGD_HEADER)];
+	PGD_HEADER* PGD = malloc(sizeof(PGD_HEADER));
 	MAC_KEY mkey;
 	CIPHER_KEY ckey;
 	u8* fkey;
+
+	if (PGD == 0) {
+		printf("PGD: Out of memory\n");
+		return -1;
+	}
 
 	// Read in the PGD header parameters.
 	memset(PGD, 0, sizeof(PGD_HEADER));
