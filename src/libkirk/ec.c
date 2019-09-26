@@ -331,7 +331,7 @@ void ec_priv_to_pub(u8 *k, u8 *Q)
 	struct point ec_temp;
 	bn_to_mon(k, ec_N, 21);
 	point_mul(&ec_temp, k, &ec_G);
-	point_from_mon(&ec_temp); 
+	point_from_mon(&ec_temp);
 	memcpy(Q,ec_temp.x,20);
 	memcpy(Q+20,ec_temp.y,20);
 }

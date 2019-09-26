@@ -66,7 +66,7 @@ static int kirk7(u8 *buf, int size, int type)
 	header[4] = size;
 
 	retv = sceUtilsBufferCopyWithRange(buf, size + 0x14, buf, size, 7);
-	
+
 	if (retv)
 		return 0x80510311;
 
@@ -85,7 +85,7 @@ static int kirk5(u8 *buf, int size)
 	header[4] = size;
 
 	retv = sceUtilsBufferCopyWithRange(buf, size + 0x14, buf, size, 5);
-	
+
 	if (retv)
 		return 0x80510312;
 
@@ -104,7 +104,7 @@ static int kirk8(u8 *buf, int size)
 	header[4] = size;
 
 	retv = sceUtilsBufferCopyWithRange(buf, size+0x14, buf, size, 8);
-	
+
 	if (retv)
 		return 0x80510312;
 
@@ -116,7 +116,7 @@ static int kirk14(u8 *buf)
 	int retv;
 
 	retv = sceUtilsBufferCopyWithRange(buf, 0x14, 0, 0, 14);
-	
+
 	if (retv)
 		return 0x80510315;
 
@@ -135,7 +135,7 @@ static int encrypt_buf(u8 *buf, int size, u8 *key, int key_type)
 	}
 
 	retv = kirk4(buf, size, key_type);
-	
+
 	if (retv)
 		return retv;
 
@@ -152,7 +152,7 @@ static int decrypt_buf(u8 *buf, int size, u8 *key, int key_type)
 	memcpy(tmp, buf + size + 0x14 - 16, 16);
 
 	retv = kirk7(buf, size, key_type);
-	
+
 	if (retv)
 		return retv;
 
@@ -180,7 +180,7 @@ static int cipher_buf(u8 *kbuf, u8 *dbuf, int size, CIPHER_KEY *ckey)
 		retv = kirk8(kbuf, 16);
 	else
 		retv = kirk7(kbuf, 16, 0x39);
-	
+
 	if (retv)
 		return retv;
 
@@ -204,7 +204,7 @@ static int cipher_buf(u8 *kbuf, u8 *dbuf, int size, CIPHER_KEY *ckey)
 	}
 
 	retv = decrypt_buf(kbuf, size, tmp1, 0x63);
-	
+
 	if (retv)
 		return retv;
 
@@ -264,10 +264,10 @@ int sceDrmBBMacUpdate(MAC_KEY *mkey, u8 *buf, int size)
 			ksize = (size + p >= 0x0800) ? 0x0800 : size + p;
 			memcpy(kbuf + p, buf, ksize - p);
 			retv = encrypt_buf(kirk_buf, ksize, mkey->key, type);
-			
+
 			if (retv)
 				goto _exit;
-			
+
 			size -= (ksize - p);
 			buf += ksize - p;
 			p = 0;
@@ -293,10 +293,10 @@ int sceDrmBBMacFinal(MAC_KEY *mkey, u8 *buf, u8 *vkey)
 
 	memset(kbuf, 0, 16);
 	retv = kirk4(kirk_buf, 16, code);
-	
+
 	if (retv)
 		goto _exit;
-	
+
 	memcpy(tmp, kbuf, 16);
 
 	t0 = (tmp[0] & 0x80) ? 0x87 : 0;
@@ -344,7 +344,7 @@ int sceDrmBBMacFinal(MAC_KEY *mkey, u8 *buf, u8 *vkey)
 	memcpy(tmp1, mkey->key, 16);
 
 	retv = encrypt_buf(kirk_buf, 0x10, tmp1, code);
-	
+
 	if (retv)
 		return retv;
 
@@ -377,7 +377,7 @@ int sceDrmBBMacFinal(MAC_KEY *mkey, u8 *buf, u8 *vkey)
 		memcpy(kbuf, tmp1, 16);
 
 		retv = kirk4(kirk_buf, 0x10, code);
-		
+
 		if (retv)
 			goto _exit;
 
@@ -454,7 +454,7 @@ int sceDrmBBCipherInit(CIPHER_KEY *ckey, int type, int mode, u8 *header_key, u8 
 	{
 		ckey->seed = 1;
 		retv = kirk14(kirk_buf);
-		
+
 		if (retv)
 			return retv;
 
@@ -481,14 +481,14 @@ int sceDrmBBCipherInit(CIPHER_KEY *ckey, int type, int mode, u8 *header_key, u8 
 				kbuf[i] ^= amctrl_key3[i];
 			}
 		}
-		
+
 		if (retv)
 			return retv;
 
 		memcpy(ckey->key, kbuf, 0x10);
 		memcpy(header_key, kbuf, 0x10);
 
-		if (version_key) 
+		if (version_key)
 		{
 			for (i = 0; i < 16; i++) {
 				ckey->key[i] ^= version_key[i];
@@ -514,10 +514,10 @@ int sceDrmBBCipherUpdate(CIPHER_KEY *ckey, u8 *data, int size)
 	{
 		dsize = (size >= 0x0800) ? 0x0800 : size;
 		retv = cipher_buf(kirk_buf, data + p, dsize, ckey);
-		
+
 		if (retv)
 			break;
-		
+
 		size -= dsize;
 		p += dsize;
 	}
@@ -558,7 +558,7 @@ int bbmac_getkey(MAC_KEY *mkey, u8 *bbmac, u8 *vkey)
 
 	type = mkey->type;
 	retv = sceDrmBBMacFinal(mkey, tmp, NULL);
-	
+
 	if (retv)
 		return retv;
 
@@ -598,10 +598,10 @@ int bbmac_forge(MAC_KEY *mkey, u8 *bbmac, u8 *vkey, u8 *buf)
 
 	memset(kbuf, 0, 16);
 	retv = kirk4(kirk_buf, 16, type);
-	
+
 	if (retv)
 		return retv;
-	
+
 	memcpy(tmp, kbuf, 16);
 
 	t0 = (tmp[0] & 0x80) ? 0x87 : 0;
@@ -689,24 +689,24 @@ int sceNpDrmGetFixedKey(u8 *key, char *npstr, int type)
 
 	if ((type & 0x01000000) == 0)
 		return 0x80550901;
-	
+
 	type &= 0x000000ff;
 
 	memset(strbuf, 0, 0x30);
 	memcpy(strbuf, npstr, 0x30);
 
 	retv = sceDrmBBMacInit(&mkey, 1);
-	
+
 	if (retv)
 		return retv;
 
 	retv = sceDrmBBMacUpdate(&mkey, (u8*)strbuf, 0x30);
-	
+
 	if (retv)
 		return retv;
 
 	retv = sceDrmBBMacFinal(&mkey, key, npdrm_fixed_key);
-	
+
 	if (retv)
 		return 0x80550902;
 
@@ -714,7 +714,7 @@ int sceNpDrmGetFixedKey(u8 *key, char *npstr, int type)
 		return 0;
 	if (type > 3)
 		return 0x80550901;
-	
+
 	type = (type - 1) * 16;
 
 	AES_set_key(&akey, &npdrm_enc_keys[type], 128);

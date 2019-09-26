@@ -40,7 +40,7 @@ typedef struct kirk16_data
 	u8 fuseid[8];
 	u8 mesh[0x40];
 } kirk16_data;
- 
+
 typedef struct header_keys
 {
 	u8 AES[16];
@@ -96,7 +96,7 @@ void decrypt_kirk16_private(u8 *dA_out, u8 *dA_enc)
 	keydata.fuseid[7] = g_fuse90 &0xFF;
 	keydata.fuseid[6] = (g_fuse90>>8) &0xFF;
 	keydata.fuseid[5] = (g_fuse90>>16) &0xFF;
-	keydata.fuseid[4] = (g_fuse90>>24) &0xFF; 
+	keydata.fuseid[4] = (g_fuse90>>24) &0xFF;
 	keydata.fuseid[3] = g_fuse94 &0xFF;
 	keydata.fuseid[2] = (g_fuse94>>8) &0xFF;
 	keydata.fuseid[1] = (g_fuse94>>16) &0xFF;
@@ -153,7 +153,7 @@ void decrypt_kirk16_private(u8 *dA_out, u8 *dA_enc)
 	/* cbc decrypt the dA */
 	AES_cbc_decrypt((AES_ctx *)&aes_ctx, dA_enc, dA_out, 0x20);
 }
- 
+
 void encrypt_kirk16_private(u8 *dA_out, u8 *dA_dec)
 {
 	int i, k;
@@ -164,7 +164,7 @@ void encrypt_kirk16_private(u8 *dA_out, u8 *dA_dec)
 	keydata.fuseid[7] = g_fuse90 &0xFF;
 	keydata.fuseid[6] = (g_fuse90>>8) &0xFF;
 	keydata.fuseid[5] = (g_fuse90>>16) &0xFF;
-	keydata.fuseid[4] = (g_fuse90>>24) &0xFF; 
+	keydata.fuseid[4] = (g_fuse90>>24) &0xFF;
 	keydata.fuseid[3] = g_fuse94 &0xFF;
 	keydata.fuseid[2] = (g_fuse94>>8) &0xFF;
 	keydata.fuseid[1] = (g_fuse94>>16) &0xFF;
@@ -232,7 +232,7 @@ int kirk_init2(u8 * rnd_seed __attribute__((unused)), u32 seed_size, u32 fuseid_
 	u8 temp[0x104];
 
 	KIRK_SHA1_HEADER *header = (KIRK_SHA1_HEADER *) temp;
-	
+
 	// Another randomly selected data for a "key" to add to each randomization
 	u8 key[0x10] = {0x07, 0xAB, 0xEF, 0xF8, 0x96, 0x8C, 0xF3, 0xD6, 0x14, 0xE0, 0xEB, 0xB2, 0x9D, 0x8B, 0x4E, 0x74};
 	u32 curtime;
@@ -244,12 +244,12 @@ int kirk_init2(u8 * rnd_seed __attribute__((unused)), u32 seed_size, u32 fuseid_
 		seedbuf=(u8*)malloc(seed_size+4);
 		seedheader= (KIRK_SHA1_HEADER *) seedbuf;
 		seedheader->data_size = seed_size;
-		kirk_CMD11(PRNG_DATA, seedbuf, seed_size+4);    
+		kirk_CMD11(PRNG_DATA, seedbuf, seed_size+4);
 		free(seedbuf);
 	}
-	
+
 	memcpy(temp+4, PRNG_DATA,0x14);
-	
+
 	// This uses the standard C time function for portability.
 	curtime = (u32)time(0);
 	temp[0x18] = curtime &0xFF;
@@ -257,11 +257,11 @@ int kirk_init2(u8 * rnd_seed __attribute__((unused)), u32 seed_size, u32 fuseid_
 	temp[0x1A] = (curtime>>16) &0xFF;
 	temp[0x1B] = (curtime>>24) &0xFF;
 	memcpy(&temp[0x1C], key, 0x10);
-	
-	// This leaves the remainder of the 0x100 bytes in temp to whatever remains on the stack 
+
+	// This leaves the remainder of the 0x100 bytes in temp to whatever remains on the stack
 	// in an uninitialized state. This should add unpredicableness to the results as well
 	header->data_size = 0x100;
-	kirk_CMD11(PRNG_DATA, temp, 0x104); 
+	kirk_CMD11(PRNG_DATA, temp, 0x104);
 
 	//Set Fuse ID
 	g_fuse90 = fuseid_90;
@@ -336,20 +336,20 @@ int kirk_CMD1(u8* outbuff, u8* inbuff, int size)
 		memcpy(kirk1_pub,Px1,20);
 		memcpy(kirk1_pub+20,Py1,20);
 		ecdsa_set_pub(kirk1_pub);
-	
+
 		//Hash the Header
 		SHAInit(&sha);
 		SHAUpdate(&sha, (u8*)eheader+0x60, 0x30);
-		SHAFinal(header_hash, &sha);		
-		
+		SHAFinal(header_hash, &sha);
+
 		if(!ecdsa_verify(header_hash,eheader->header_sig_r,eheader->header_sig_s)) {
 			return KIRK_HEADER_HASH_INVALID;
 		}
-		
+
 		SHAInit(&sha);
 		SHAUpdate(&sha, (u8*)eheader+0x60, size-0x60);
-		SHAFinal(data_hash, &sha);  
-		
+		SHAFinal(data_hash, &sha);
+
 		if(!ecdsa_verify(data_hash,eheader->data_sig_r,eheader->data_sig_s)) {
 			return KIRK_DATA_HASH_INVALID;
 		}
@@ -359,7 +359,7 @@ int kirk_CMD1(u8* outbuff, u8* inbuff, int size)
 	}
 
 	AES_set_key(&k1, keys.AES, 128);
-	AES_cbc_decrypt(&k1, inbuff+sizeof(KIRK_CMD1_HEADER)+header->data_offset, outbuff, header->data_size);  
+	AES_cbc_decrypt(&k1, inbuff+sizeof(KIRK_CMD1_HEADER)+header->data_offset, outbuff, header->data_size);
 
 	return KIRK_OPERATION_SUCCESS;
 }
@@ -446,7 +446,7 @@ int kirk_CMD10(u8* inbuff, int insize __attribute__((unused)))
 
 		return KIRK_OPERATION_SUCCESS;
 	}
-	
+
 	return KIRK_SIG_CHECK_INVALID; //Checks for cmd 2 & 3 not included right now
 }
 
@@ -460,7 +460,7 @@ int kirk_CMD11(u8* outbuff, u8* inbuff, int size)
 	SHAInit(&sha);
 	SHAUpdate(&sha, inbuff+sizeof(KIRK_SHA1_HEADER), header->data_size);
 	SHAFinal(outbuff, &sha);
-	
+
 	return KIRK_OPERATION_SUCCESS;
 }
 
@@ -472,7 +472,7 @@ int kirk_CMD12(u8 * outbuff, int outsize)
 	if (outsize != 0x3C) return KIRK_INVALID_SIZE;
 	ecdsa_set_curve(ec_p,ec_a,ec_b2,ec_N2,Gx2,Gy2);
 	k[0] = 0;
-	
+
 	kirk_CMD14(k+1,0x14);
 	ec_priv_to_pub(k, (u8*)keypair->public_key.x);
 	memcpy(keypair->private_key,k+1,0x14);
@@ -485,15 +485,15 @@ int kirk_CMD13(u8 * outbuff, int outsize,u8 * inbuff, int insize)
 	u8 k[0x15];
 	KIRK_CMD13_BUFFER * pointmult = (KIRK_CMD13_BUFFER *) inbuff;
 	k[0]=0;
-	
+
 	if (outsize != 0x28) return KIRK_INVALID_SIZE;
 	if (insize != 0x3C) return KIRK_INVALID_SIZE;
-	
+
 	ecdsa_set_curve(ec_p,ec_a,ec_b2,ec_N2,Gx2,Gy2);
 	ecdsa_set_pub((u8*)pointmult->public_key.x);
 	memcpy(k+1,pointmult->multiplier,0x14);
 	ec_pub_mult(k, outbuff);
-	
+
 	return KIRK_OPERATION_SUCCESS;
 }
 
@@ -505,11 +505,11 @@ int kirk_CMD14(u8 * outbuff, int outsize)
 	// Some randomly selected data for a "key" to add to each randomization
 	u8 key[0x10] = { 0xA7, 0x2E, 0x4C, 0xB6, 0xC3, 0x34, 0xDF, 0x85, 0x70, 0x01, 0x49, 0xFC, 0xC0, 0x87, 0xC4, 0x77 };
 	u32 curtime;
-	
+
 	if(outsize <=0) return KIRK_OPERATION_SUCCESS;
 
 	memcpy(temp+4, PRNG_DATA,0x14);
-	
+
 	// This uses the standard C time function for portability.
 	curtime=(u32)time(0);
 	temp[0x18] = curtime &0xFF;
@@ -517,12 +517,12 @@ int kirk_CMD14(u8 * outbuff, int outsize)
 	temp[0x1A] = (curtime>>16) &0xFF;
 	temp[0x1B] = (curtime>>24) &0xFF;
 	memcpy(&temp[0x1C], key, 0x10);
-	
-	// This leaves the remainder of the 0x100 bytes in temp to whatever remains on the stack 
+
+	// This leaves the remainder of the 0x100 bytes in temp to whatever remains on the stack
 	// in an uninitialized state. This should add unpredicableness to the results as well
 	header->data_size=0x100;
 	kirk_CMD11(PRNG_DATA, temp, 0x104);
-	
+
 	while(outsize)
 	{
 		int blockrem = outsize %0x14;
@@ -542,7 +542,7 @@ int kirk_CMD14(u8 * outbuff, int outsize)
 			}
 		}
 	}
-	
+
 	return KIRK_OPERATION_SUCCESS;
 }
 
@@ -551,31 +551,31 @@ int kirk_CMD16(u8 * outbuff, int outsize, u8 * inbuff, int insize)
 	u8 dec_private[0x20];
 	KIRK_CMD16_BUFFER * signbuf = (KIRK_CMD16_BUFFER *) inbuff;
 	ECDSA_SIG * sig = (ECDSA_SIG *) outbuff;
-	
+
 	if (insize != 0x34) return KIRK_INVALID_SIZE;
 	if (outsize != 0x28) return KIRK_INVALID_SIZE;
-	
+
 	decrypt_kirk16_private(dec_private,signbuf->enc_private);
-	
+
 	// Clear out the padding for safety
 	memset(&dec_private[0x14], 0, 0xC);
-	
+
 	ecdsa_set_curve(ec_p,ec_a,ec_b2,ec_N2,Gx2,Gy2);
 	ecdsa_set_priv(dec_private);
 	ecdsa_sign(signbuf->message_hash,sig->r, sig->s);
-	
+
 	return KIRK_OPERATION_SUCCESS;
 }
 
 int kirk_CMD17(u8 * inbuff, int insize)
 {
 	KIRK_CMD17_BUFFER * sig = (KIRK_CMD17_BUFFER *) inbuff;
-	
+
 	if (insize != 0x64) return KIRK_INVALID_SIZE;
-	
+
 	ecdsa_set_curve(ec_p,ec_a,ec_b2,ec_N2,Gx2,Gy2);
 	ecdsa_set_pub(sig->public_key.x);
-	
+
 	if (ecdsa_verify(sig->message_hash,sig->signature.r,sig->signature.s)) {
 		return KIRK_OPERATION_SUCCESS;
 	} else {
@@ -597,7 +597,7 @@ int sceUtilsBufferCopyWithRange(u8* outbuff, int outsize, u8* inbuff, int insize
 	case KIRK_CMD_ECDSA_MULTIPLY_POINT: return kirk_CMD13(outbuff,outsize, inbuff, insize); break;
 	case KIRK_CMD_PRNG: return kirk_CMD14(outbuff,outsize); break;
 	case KIRK_CMD_ECDSA_SIGN: return kirk_CMD16(outbuff, outsize, inbuff, insize); break;
-	case KIRK_CMD_ECDSA_VERIFY: return kirk_CMD17(inbuff, insize); break;     
+	case KIRK_CMD_ECDSA_VERIFY: return kirk_CMD17(inbuff, insize); break;
 	}
 	return -1;
 }

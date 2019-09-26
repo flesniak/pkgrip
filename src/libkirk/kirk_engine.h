@@ -1,15 +1,15 @@
 /*
 	Draan proudly presents:
-	
+
 	With huge help from community:
 	coyotebean, Davee, hitchhikr, kgsws, liquidzigong, Mathieulh, Proxima, SilverSpring
-	
+
 	******************** KIRK-ENGINE ********************
 	An Open-Source implementation of KIRK (PSP crypto engine) algorithms and keys.
 	Includes also additional routines for hash forging.
-	
+
 	********************
-	
+
 	This program is free software: you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
 	the Free Software Foundation, either version 3 of the License, or
@@ -141,7 +141,7 @@ typedef struct
 
 typedef struct
 {
-    u32 data_size;
+	u32 data_size;
 } KIRK_SHA1_HEADER;
 
 typedef struct
@@ -190,7 +190,7 @@ typedef struct
 	0x0C: Mul1
 	0x0D: Mul2
 	0x0E: Random Number Gen
-	0x0F: (absolutely no idea – could be KIRK initialization)
+	0x0F: (absolutely no idea, could be KIRK initialization)
 	0x10: Signature Gen
 
 	// Sig Checks
