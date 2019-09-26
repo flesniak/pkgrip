@@ -693,7 +693,7 @@ int sceNpDrmGetFixedKey(u8 *key, char *npstr, int type)
 	type &= 0x000000ff;
 
 	memset(strbuf, 0, 0x30);
-	strncpy(strbuf, npstr, 0x30);
+	memcpy(strbuf, npstr, 0x30);
 
 	retv = sceDrmBBMacInit(&mkey, 1);
 	
